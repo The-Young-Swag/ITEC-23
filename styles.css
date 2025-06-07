@@ -635,6 +635,13 @@ footer {
 
 /* Mobile-specific carousel design (below 667px) */
 @media (max-width: 666px) {
+        .navbar h2 {
+    color: #f9fafb;
+    border-bottom: 3px solid #10b981;
+    padding-bottom: 0.5rem;
+    font-size: 1.4rem;
+    margin-bottom: 1rem;
+}
     .carousel-container {
         padding: 0.5rem;
         max-height: none;
