@@ -243,11 +243,12 @@ body {
 
 .image-grid {
     display: grid;
-    grid-template-columns: repeat(2, minmax(120px, 1fr));
-    gap: 0.6rem;
+    grid-template-columns: repeat(2, minmax(100px, 1fr));
+    gap: 0.4rem;
     justify-content: center;
     margin: 0.8rem 0;
-    padding: 0 0.5rem;
+    padding: 0 0.3rem;
+    overflow-x: hidden;
 }
 
 .image-figure {
@@ -294,7 +295,8 @@ body {
 
 .image-grid img {
     width: 100%;
-    height: 110px;
+    max-height: 110px;
+    height: auto;
     object-fit: contain;
     display: block;
     transition: all 0.3s ease;
@@ -640,6 +642,7 @@ footer {
         background: transparent;
         border: none;
         margin: 0.5rem 0;
+        position: relative;
     }
 
     .carousel {
@@ -665,7 +668,7 @@ footer {
         justify-content: flex-start;
         align-items: flex-start;
         text-align: left;
-        transition: transform 0.2s ease;
+        transition: transform 0.2s ease, opacity 0.3s ease;
     }
 
     .carousel-slide:hover {
@@ -713,6 +716,30 @@ footer {
     .carousel-dots {
         display: none; /* Hide dots for mobile */
     }
+
+    /* Swipe indicator for mobile */
+.carousel-container::before {
+    content: 'Swipe to navigate';
+    position: absolute;
+    bottom: 10px;
+    left: 50%;
+    width: 56vw;
+    transform: translateX(-50%);
+    background: rgba(16, 185, 129, 0.85);
+    color: #f9fafb;
+    padding: 0.25rem 0.75rem; /* reduced vertical and horizontal padding */
+    border-radius: 4px;
+    font-size: 0.75rem; /* slightly smaller text */
+    line-height: 1.2;
+    z-index: 10;
+    text-align: center;
+}
+
+
+    @keyframes fadeOut {
+        0% { opacity: 1; }
+        100% { opacity: 0; visibility: hidden; }
+    }
 }
 
 /* Responsive Design - Adjustments for larger screens */
@@ -755,6 +782,7 @@ footer {
     .image-grid {
         grid-template-columns: repeat(2, minmax(140px, 1fr));
         gap: 0.8rem;
+        padding: 0 0.5rem;
     }
     .image-figure.expanded {
         width: 85vw;
@@ -866,6 +894,7 @@ footer {
     .image-grid {
         grid-template-columns: repeat(2, minmax(150px, 250px));
         gap: 0.8rem;
+        padding: 0 0.5rem;
     }
     .image-figure.expanded {
         width: 90vw;
