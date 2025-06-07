@@ -219,6 +219,7 @@ if (DOM.carousel && DOM.slides.length) {
     let currentSlide = 0;
     let autoPlayInterval = null;
     let isMobile = window.innerWidth <= 666;
+    let isSwiping = false;
 
     function updateCarousel() {
         if (!isMobile) {
@@ -227,6 +228,7 @@ if (DOM.carousel && DOM.slides.length) {
             DOM.carousel.style.transition = 'transform 0.5s ease-in-out';
             DOM.slides.forEach(slide => {
                 slide.style.display = 'flex';
+                slide.style.opacity = '1';
             });
             if (DOM.dots.length) {
                 DOM.dots.forEach((dot, index) => {
@@ -243,6 +245,8 @@ if (DOM.carousel && DOM.slides.length) {
             DOM.carousel.style.transition = 'none';
             DOM.slides.forEach((slide, index) => {
                 slide.style.display = index === currentSlide ? 'flex' : 'none';
+                slide.style.opacity = index === currentSlide ? '1' : '0';
+                slide.style.transition = 'opacity 0.3s ease';
             });
         }
     }
@@ -270,9 +274,10 @@ if (DOM.carousel && DOM.slides.length) {
         DOM.slides.forEach(slide => {
             slide.style.display = isMobile ? 'none' : 'flex';
             slide.style.transform = 'none';
+            slide.style.opacity = isMobile ? '0' : '1';
         });
-        // Ensure correct slide is visible
-        currentSlide = Math.min(currentSlide, DOM.slides.length - 1);
+        // Ensure valid slide index
+        currentSlide = Math.max(0, Math.min(currentSlide, DOM.slides.length - 1));
         updateCarousel();
         if (!isMobile) {
             startAutoPlay();
@@ -340,10 +345,28 @@ if (DOM.carousel && DOM.slides.length) {
         });
     }
 
-    // Mobile swipe functionality
+    // Mobile swipe functionality with debouncing
     if (DOM.carousel) {
         let touchStartX = 0;
         let touchEndX = 0;
+
+        const debouncedSwipe = debounce(() => {
+            if (isMobile && !isSwiping) {
+                isSwiping = true;
+                if (touchStartX - touchEndX > 50) {
+                    // Swipe left
+                    currentSlide = (currentSlide + 1) % DOM.slides.length;
+                    updateCarousel();
+                } else if (touchEndX - touchStartX > 50) {
+                    // Swipe right
+                    currentSlide = (currentSlide - 1 + DOM.slides.length) % DOM.slides.length;
+                    updateCarousel();
+                }
+                setTimeout(() => {
+                    isSwiping = false;
+                }, 300);
+            }
+        }, 100);
 
         DOM.carousel.addEventListener('touchstart', (e) => {
             if (isMobile) {
@@ -354,15 +377,7 @@ if (DOM.carousel && DOM.slides.length) {
         DOM.carousel.addEventListener('touchend', (e) => {
             if (isMobile) {
                 touchEndX = e.changedTouches[0].screenX;
-                if (touchStartX - touchEndX > 50) {
-                    // Swipe left
-                    currentSlide = (currentSlide + 1) % DOM.slides.length;
-                    updateCarousel();
-                } else if (touchEndX - touchStartX > 50) {
-                    // Swipe right
-                    currentSlide = (currentSlide - 1 + DOM.slides.length) % DOM.slides.length;
-                    updateCarousel();
-                }
+                debouncedSwipe();
             }
         }, { passive: true });
     }
