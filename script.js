@@ -345,42 +345,48 @@ if (DOM.carousel && DOM.slides.length) {
         });
     }
 
-    // Mobile swipe functionality with debouncing
-    if (DOM.carousel) {
-        let touchStartX = 0;
-        let touchEndX = 0;
+// Mobile swipe functionality with proper horizontal detection
+if (DOM.carousel) {
+    let touchStartX = 0;
+    let touchStartY = 0;
+    let touchEndX = 0;
+    let touchEndY = 0;
 
-        const debouncedSwipe = debounce(() => {
-            if (isMobile && !isSwiping) {
-                isSwiping = true;
-                if (touchStartX - touchEndX > 50) {
-                    // Swipe left
-                    currentSlide = (currentSlide + 1) % DOM.slides.length;
-                    updateCarousel();
-                } else if (touchEndX - touchStartX > 50) {
-                    // Swipe right
-                    currentSlide = (currentSlide - 1 + DOM.slides.length) % DOM.slides.length;
-                    updateCarousel();
-                }
-                setTimeout(() => {
-                    isSwiping = false;
-                }, 300);
-            }
-        }, 100);
+    const handleSwipe = debounce(() => {
+        const deltaX = touchEndX - touchStartX;
+        const deltaY = touchEndY - touchStartY;
 
-        DOM.carousel.addEventListener('touchstart', (e) => {
-            if (isMobile) {
-                touchStartX = e.changedTouches[0].screenX;
+        // Ensure horizontal swipe is dominant
+        if (Math.abs(deltaX) > 50 && Math.abs(deltaX) > Math.abs(deltaY)) {
+            if (deltaX < 0) {
+                // Swipe left
+                currentSlide = (currentSlide + 1) % DOM.slides.length;
+            } else {
+                // Swipe right
+                currentSlide = (currentSlide - 1 + DOM.slides.length) % DOM.slides.length;
             }
-        }, { passive: true });
+            updateCarousel();
+        }
+    }, 100);
 
-        DOM.carousel.addEventListener('touchend', (e) => {
-            if (isMobile) {
-                touchEndX = e.changedTouches[0].screenX;
-                debouncedSwipe();
-            }
-        }, { passive: true });
-    }
+    DOM.carousel.addEventListener('touchstart', (e) => {
+        if (isMobile) {
+            const touch = e.changedTouches[0];
+            touchStartX = touch.screenX;
+            touchStartY = touch.screenY;
+        }
+    }, { passive: true });
+
+    DOM.carousel.addEventListener('touchend', (e) => {
+        if (isMobile) {
+            const touch = e.changedTouches[0];
+            touchEndX = touch.screenX;
+            touchEndY = touch.screenY;
+            handleSwipe();
+        }
+    }, { passive: true });
+}
+
 
     // Handle window resize
     window.addEventListener('resize', debounce(() => {
