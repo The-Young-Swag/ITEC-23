@@ -345,29 +345,14 @@ if (DOM.carousel && DOM.slides.length) {
         });
     }
 
-// Mobile swipe functionality with proper horizontal detection
 if (DOM.carousel) {
     let touchStartX = 0;
     let touchStartY = 0;
     let touchEndX = 0;
     let touchEndY = 0;
 
-    const handleSwipe = debounce(() => {
-        const deltaX = touchEndX - touchStartX;
-        const deltaY = touchEndY - touchStartY;
-
-        // Ensure horizontal swipe is dominant
-        if (Math.abs(deltaX) > 50 && Math.abs(deltaX) > Math.abs(deltaY)) {
-            if (deltaX < 0) {
-                // Swipe left
-                currentSlide = (currentSlide + 1) % DOM.slides.length;
-            } else {
-                // Swipe right
-                currentSlide = (currentSlide - 1 + DOM.slides.length) % DOM.slides.length;
-            }
-            updateCarousel();
-        }
-    }, 100);
+    const MIN_SWIPE_DISTANCE = 50;
+    const DIRECTION_THRESHOLD = 1.5; // horizontal must be 1.5x stronger than vertical to count as horizontal
 
     DOM.carousel.addEventListener('touchstart', (e) => {
         if (isMobile) {
@@ -382,10 +367,31 @@ if (DOM.carousel) {
             const touch = e.changedTouches[0];
             touchEndX = touch.screenX;
             touchEndY = touch.screenY;
-            handleSwipe();
+
+            const deltaX = touchEndX - touchStartX;
+            const deltaY = touchEndY - touchStartY;
+
+            const absDeltaX = Math.abs(deltaX);
+            const absDeltaY = Math.abs(deltaY);
+
+            // Only treat as horizontal swipe if it's clearly more horizontal than vertical
+            if (
+                absDeltaX > MIN_SWIPE_DISTANCE &&
+                absDeltaX / absDeltaY > DIRECTION_THRESHOLD
+            ) {
+                if (deltaX < 0) {
+                    // Swipe left
+                    currentSlide = (currentSlide + 1) % DOM.slides.length;
+                } else {
+                    // Swipe right
+                    currentSlide = (currentSlide - 1 + DOM.slides.length) % DOM.slides.length;
+                }
+                updateCarousel();
+            }
         }
     }, { passive: true });
 }
+
 
 
     // Handle window resize
